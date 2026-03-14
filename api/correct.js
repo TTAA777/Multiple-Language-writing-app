@@ -255,9 +255,25 @@ Be strict enough to help improvement, but not unfair.
 This is a training app.
 Reward correctness, explain weaknesses precisely, and always help the learner move toward a higher exam-writing level.`;
 
+        const userPrompt = `
+        Please correct and score the following writing.
+
+        Target language: ${targetLanguage}
+        Exam: ${examType}
+        Level: ${level}
+        Focus: ${focus}
+        Feedback language: ${feedbackLanguage}
+
+        Original prompt:
+        ${promptText}
+
+        Student answer:
+        ${userAnswer}
+        `;
+
         let attempts = 0;
         let result = null;
-
+        
         while (attempts < 2) {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
@@ -300,20 +316,24 @@ Reward correctness, explain weaknesses precisely, and always help the learner mo
         }
 
         result = {
-            targetLanguage: result?.targetLanguage || targetLanguage,
-            examType: result?.examType || examType,
-            level: result?.level || level,
-            focus: result?.focus || focus,
-            overallScore: result?.overallScore || '',
-            rubricScores: result?.rubricScores || {},
-            correctedAnswer: result?.correctedAnswer || '',
-            summary: result?.summary || '',
-            goodPoints: Array.isArray(result?.goodPoints) ? result.goodPoints : [],
-            improvements: Array.isArray(result?.improvements) ? result.improvements : [],
-            errors: Array.isArray(result?.errors) ? result.errors : [],
-            finalAdvice: result?.finalAdvice || '',
-            shouldAddToMistakes: Boolean(result?.shouldAddToMistakes)
-        };
+    targetLanguage: result?.targetLanguage || targetLanguage,
+    examType: result?.examType || examType,
+    level: result?.level || level,
+    focus: result?.focus || focus,
+    overallScore: result?.overallScore || '',
+    bandJustification: result?.bandJustification || '',
+    rubricScores: result?.rubricScores || {},
+    correctedAnswer: result?.correctedAnswer || '',
+    modelAnswer: result?.modelAnswer || '',
+    summary: result?.summary || '',
+    goodPoints: Array.isArray(result?.goodPoints) ? result.goodPoints : [],
+    improvements: Array.isArray(result?.improvements) ? result.improvements : [],
+    vocabularyUpgrades: Array.isArray(result?.vocabularyUpgrades) ? result.vocabularyUpgrades : [],
+    errors: Array.isArray(result?.errors) ? result.errors : [],
+    finalAdvice: result?.finalAdvice || '',
+    memorisationTip: result?.memorisationTip || '',
+    shouldAddToMistakes: Boolean(result?.shouldAddToMistakes)
+};
 
         return res.status(200).json(result);
 
