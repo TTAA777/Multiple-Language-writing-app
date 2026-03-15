@@ -48,7 +48,7 @@ export default async function handler(req, res) {
 
         const prompt = `You are an expert language exam trainer.
 
-Generate ONE Japanese sentence that could realistically appear in an essay written by a student preparing for the following exam:
+Generate ONE ${uiLangMap[uiLang]} sentence that could realistically appear in an essay written by a student preparing for the following exam:
 
 Exam: {examType}
 Level / Band: {level}
@@ -59,18 +59,28 @@ Requirements:
 1. The sentence should represent the level required for this exam level.
 2. It should contain abstract or academic ideas typical in exam writing.
 3. It should be suitable for translation practice into the target language.
-4. Avoid extremely long sentences (20–35 Japanese characters is ideal).
+4. Avoid extremely long sentences (20–35 characters is ideal).
 5. Do NOT include explanations.
-6. Output ONLY the Japanese sentence.
+6. You must generate ${uiLangMap[uiLang]} sentences not ${targetLangMap[targetLanguage]} sentences.
 
 The sentence should reflect typical themes seen in language exams such as:
-- education
-- environment
+- society
 - technology
-- government policy
-- economic development
-- social change
+- environment
+- culture
+- education
+- economics
+- psychology
+- media
 - globalization
+- urban development
+- science
+- lifestyle
+- government policy
+- ethics
+- communication
+
+Avoid repeating similar themes too often.
 
 Return only the sentence.`;
 
