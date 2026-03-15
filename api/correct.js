@@ -250,6 +250,10 @@ ADDITIONAL SCORING GUIDANCE:
 - "summary" should briefly state the overall quality
 - "memorisationTip" should give the learner one short practical tip for remembering the improved sentence
 
+Vocabulary upgrades:
+Suggest up to 3 higher-level or more natural alternatives for words or phrases used by the student.
+Only include them if they genuinely improve the expression.
+
 FINAL BEHAVIOR RULE:
 Be strict enough to help improvement, but not unfair.
 This is a training app.
