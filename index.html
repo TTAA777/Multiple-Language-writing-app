@@ -241,7 +241,7 @@
 
         .score-display {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            color: #111;
             padding: 20px;
             border-radius: 10px;
             margin: 20px 0;
@@ -1587,6 +1587,78 @@ async function correctAnswer() {
     }
 }
 
+function renderScoreProgress(result) {
+    const examType = String(result.examType || currentState.exam || '');
+    const scoreText = String(result.overallScore || '');
+    const numericScore = parseFloat(scoreText);
+
+    if (isNaN(numericScore)) return '';
+
+    let maxScore = 9;
+    let label = 'Progress';
+
+    if (examType.includes('IELTS')) {
+        maxScore = 9;
+        label = 'Band Progress';
+    } else if (examType.includes('TOEFL')) {
+        maxScore = 5;
+        label = 'Score Progress';
+    } else if (examType.includes('TOEIC')) {
+        maxScore = 100;
+        label = 'Score Progress';
+    } else {
+        return '';
+    }
+
+    const percentage = Math.max(0, Math.min((numericScore / maxScore) * 100, 100));
+
+    return `
+        <div style="margin-top: 14px;">
+            <div style="display:flex; justify-content:space-between; font-size:13px; color:#444; margin-bottom:6px;">
+                <span>${label}</span>
+                <span>${numericScore} / ${maxScore}</span>
+            </div>
+            <div style="
+                width:100%;
+                height:12px;
+                background:#e5e7eb;
+                border-radius:999px;
+                overflow:hidden;
+            ">
+                <div style="
+                    width:${percentage}%;
+                    height:100%;
+                    background:#2563eb;
+                    border-radius:999px;
+                "></div>
+            </div>
+        </div>
+    `;
+}
+
+function renderIELTSBandScale() {
+    return `
+        <div style="
+            display:flex;
+            justify-content:space-between;
+            font-size:11px;
+            color:#666;
+            margin-top:6px;
+        ">
+            <span>0</span>
+            <span>1</span>
+            <span>2</span>
+            <span>3</span>
+            <span>4</span>
+            <span>5</span>
+            <span>6</span>
+            <span>7</span>
+            <span>8</span>
+            <span>9</span>
+        </div>
+    `;
+}
+
 function displayResult(result, userAnswer) {
     const display = document.getElementById('resultDisplay');
     const t = TRANSLATIONS[currentState.feedbackLang];
@@ -1637,8 +1709,29 @@ function displayResult(result, userAnswer) {
 
     display.innerHTML = `
         <div class="score-display">
-            <h3>Overall Score: ${result.overallScore}</h3>
+        <div style="
+            background:#ffffff;
+            border-left:6px solid #2563eb;
+            padding:20px;
+            border-radius:12px;
+            margin:20px 0;
+        ">
+            <h3 style="color:#111; display:flex; align-items:center; gap:10px;">
+                <span>Overall Score:</span>
+                <span style="
+                    background:#dbeafe;
+                    color:#1d4ed8;
+                    font-size:14px;
+                    padding:4px 10px;
+                    border-radius:999px;
+                    font-weight:600;
+                ">
+                    ${result.overallScore}
+                </span>
+            </h3>
+            
             <p style="font-size: 12px; opacity: 0.9;">${t.scoreDisclaimer}</p>
+            ${renderScoreProgress(result)}
             ${rubricHTML}
         </div>
         
