@@ -1,18 +1,38 @@
 export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    try {
-        const {
-            targetLanguage,
-            examType,
-            level,
-            focus,
-            promptText,
-            userAnswer,
-            feedbackLanguage
-        } = req.body;
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const {
+      targetLanguage,
+      examType,
+      level,
+      focus,
+      promptText,
+      userAnswer,
+      feedbackLanguage
+    } = req.body;
+
+    console.log('CORRECT API PAYLOAD', {
+      targetLanguage,
+      examType,
+      level,
+      focus,
+      promptText,
+      userAnswer,
+      feedbackLanguage
+    });
+
+    // ここから下に元の correction ロジックを続ける
 
         if (!targetLanguage || !examType || !level || !promptText || !userAnswer || !feedbackLanguage) {
             return res.status(400).json({ error: 'Missing required fields' });
@@ -350,8 +370,8 @@ Reward correctness, explain weaknesses precisely, and always help the learner mo
 
         return res.status(200).json(result);
 
-    } catch (error) {
-        console.error('Error:', error);
-        return res.status(500).json({ error: error.message });
-    }
+  } catch (error) {
+    console.error('Error:', error);
+    return res.status(500).json({ error: error.message });
+  }
 }
