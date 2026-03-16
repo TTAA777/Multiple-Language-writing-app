@@ -89,13 +89,13 @@ Return only the sentence.`;
 
         console.log('about to call OpenAI');
 
-        console.log('ASK PAYLOAD', {
-            targetLang: currentState.targetLang,
-            exam: currentState.exam,
-            level: currentState.level,
-            focus: currentState.focus,
-            uiLang: currentState.uiLang,
-            feedbackLang: currentState.feedbackLang
+        cconsole.log('ASK PAYLOAD', {
+            targetLanguage,
+            examType,
+            level,
+            focus,
+            uiLang,
+            feedbackLang
         });
 
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
