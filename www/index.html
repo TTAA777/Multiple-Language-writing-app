@@ -1,0 +1,2280 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="WritingCoach">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+
+    <title>多言語AIライティングアプリ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans JP', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        body::before {
+            width: 400px;
+            height: 400px;
+            background: #f093fb;
+            top: -100px;
+            right: -100px;
+        }
+
+        body::after {
+            width: 500px;
+            height: 500px;
+            background: #4facfe;
+            bottom: -150px;
+            left: -150px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .lang-switcher {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .lang-switcher select {
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: #f5f5f5;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        select, textarea, input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .mistake-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mistake-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .error-list {
+            margin-top: 15px;
+        }
+
+        .error-item {
+            background: #fff3cd;
+            padding: 12px;
+            border-left: 4px solid #ffc107;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .score-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #111;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .score-display h3 {
+            margin-bottom: 15px;
+        }
+
+        .rubric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .rubric-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .char-panel {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        .char-panel.active {
+            display: block;
+        }
+
+        .char-btn {
+            padding: 8px 12px;
+            margin: 3px;
+            border: 1px solid #dee2e6;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .char-btn:hover {
+            background: #e9ecef;
+        }
+
+        .voice-btn {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .voice-btn:disabled {
+            opacity: 0.5;
+        }
+
+        .tip-banner {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #0c5460;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            margin: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        [dir="rtl"] {
+            direction: rtl;
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+
+        .feedback-result-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-top: 20px;
+        }
+
+        .feedback-card {
+        background: #ffffff;
+        border: 1px solid #dfe3ea;
+        border-radius: 16px;
+        padding: 18px 20px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+        }
+
+        .feedback-card h2,
+        .feedback-card h3 {
+        margin: 0 0 10px 0;
+        }
+
+        .score-main {
+        font-size: 30px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        }
+
+        .boxed-text {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 12px 14px;
+        line-height: 1.7;
+        white-space: pre-wrap;
+        }
+
+        .rubric-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 10px;
+        }
+
+        .rubric-item {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 10px 12px;
+        }
+
+        .good-card {
+        background: #eaf7ec;
+        }
+        
+        .improvement-card {
+        }
+
+        .summary-card {
+        background: #eaf4ff;
+        }
+
+        .advice-card {
+        background: #eaf4ff;
+        }
+
+        .vocab-card {
+        background: #f3edff;
+        border-left: 6px solid #8b5cf6;
+        }
+
+        .vocab-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        }
+
+        .vocab-item {
+        background: rgba(255,255,255,0.75);
+        border: 1px solid rgba(139,92,246,0.18);
+        border-radius: 10px;
+        padding: 12px;
+        }
+
+        .error-item {
+        background: #fff8e1;
+        border-left: 5px solid #f4b400;
+        border-radius: 10px;
+        padding: 12px;
+        margin-top: 10px;
+        line-height: 1.6;
+        }
+
+        .result-actions {
+        display: flex;
+        justify-content: flex-end;
+        }
+
+        .next-btn {
+        background: #111827;
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 18px;
+        font-size: 15px;
+        cursor: pointer;
+        }
+
+        .next-btn:hover {
+         opacity: 0.9;
+        }
+
+        .char-panel.collapsed {
+            display: none;
+        }
+
+        body.lang-ja,
+        body.lang-ja * {
+            font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif !important;
+        }
+ 
+    </style>
+</head>
+
+<script>
+if (
+  'serviceWorker' in navigator &&
+  !window.location.protocol.startsWith('capacitor')
+) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(() => console.log('Service Worker registered'))
+      .catch(err => console.log('Service Worker registration failed:', err));
+  });
+}
+</script>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h1 id="appTitle">多言語AIライティングアプリ</h1>
+                <div class="lang-switcher">
+                    <select id="uiLangSelect">
+                        <option value="JA">日本語 (UI)</option>
+                        <option value="EN">English (UI)</option>
+                        <option value="FR">Français (UI)</option>
+                        <option value="ES">Español (UI)</option>
+                        <option value="DE">Deutsch (UI)</option>
+                        <option value="IT">Italiano (UI)</option>
+                        <option value="PT">Português (UI)</option>
+                        <option value="ZH">中文 (UI)</option>
+                        <option value="KO">한국어 (UI)</option>
+                        <option value="AR">العربية (UI)</option>
+                    </select>
+                    <select id="feedbackLangSelect">
+                        <option value="JA">日本語 (Feedback)</option>
+                        <option value="EN">English (Feedback)</option>
+                        <option value="FR">Français (Feedback)</option>
+                        <option value="ES">Español (Feedback)</option>
+                        <option value="DE">Deutsch (Feedback)</option>
+                        <option value="IT">Italiano (Feedback)</option>
+                        <option value="PT">Português (Feedback)</option>
+                        <option value="ZH">中文 (Feedback)</option>
+                        <option value="KO">한국어 (Feedback)</option>
+                        <option value="AR">العربية (Feedback)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="nav-tabs" id="navTabs"></div>
+
+            <!-- Home Page -->
+            <div id="homePage" class="page active">
+                <div class="form-group">
+                    <label id="labelTargetLang">学習言語を選択</label>
+                    <select id="targetLangSelect"></select>
+                </div>
+                <div class="form-group">
+                    <label id="labelExam">試験タイプを選択</label>
+                    <select id="examSelect"></select>
+                </div>
+                <div class="form-group">
+                    <label id="labelLevel">レベルを選択</label>
+                    <select id="levelSelect"></select>
+                </div>
+                <div class="form-group">
+                    <label id="labelFocus">フォーカスを選択</label>
+                    <select id="focusSelect"></select>
+                </div>
+                <button class="btn" id="newPracticeBtn">新しい練習を開始</button>
+                <button class="btn btn-secondary" id="mistakeNotebookBtn">ミスノート</button>
+                <button class="btn btn-secondary" id="reviewTestBtn">復習テスト</button>
+            </div>
+
+            <!-- Practice Page -->
+            <div id="practicePage" class="page">
+                <div id="promptDisplay" style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;"></div>
+                
+                <div id="mobileTipBanner" class="tip-banner" style="display: none;"></div>
+                
+                <button class="voice-btn" id="voiceInputBtn" style="display: none;">
+                    🎤 <span id="voiceBtnText">音声入力</span>
+                </button>
+                
+                <button class="btn btn-secondary" id="toggleCharPanelBtn" type="button" style="display: none;">
+                    Show Character Panel
+                </button>
+
+                <div id="charPanel" class="char-panel"></div>
+                
+                <div class="form-group">
+                    <label id="labelAnswer">あなたの回答</label>
+                    <textarea id="answerTextarea" placeholder="ここに回答を入力してください..."></textarea>
+                </div>
+                
+                <button class="btn" id="correctBtn">添削 & スコア表示</button>
+                <button class="btn btn-secondary" id="backToHomeBtn">ホームに戻る</button>
+                
+                <div id="resultDisplay" style="display: none; margin-top: 30px;"></div>
+            </div>
+
+            <!-- Mistake Notebook Page -->
+            <div id="mistakeNotebookPage" class="page">
+                <div class="filter-group">
+                    <select id="filterLang">
+                        <option value="">全ての言語</option>
+                    </select>
+                    <select id="filterExam">
+                        <option value="">全ての試験</option>
+                    </select>
+                    <select id="filterStatus">
+                        <option value="">全てのステータス</option>
+                        <option value="active">学習中</option>
+                        <option value="mastered">習得済み</option>
+                    </select>
+                </div>
+                <div id="mistakeList"></div>
+                <button class="btn btn-secondary" id="backFromNotebookBtn">ホームに戻る</button>
+            </div>
+
+            <!-- Mistake Detail Modal -->
+            <div id="mistakeDetailModal" class="modal">
+                <div class="modal-content">
+                    <div id="mistakeDetailContent"></div>
+                    <button class="btn btn-secondary" id="closeMistakeDetailBtn">閉じる</button>
+                </div>
+            </div>
+
+            <!-- Review Test Page -->
+            <div id="reviewTestPage" class="page">
+                <div id="reviewTestContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+// Constants
+const LANGUAGES = {
+    EN: 'English',
+    FR: 'Français',
+    ES: 'Español',
+    DE: 'Deutsch',
+    IT: 'Italiano',
+    PT: 'Português',
+    ZH: '中文',
+    JA: '日本語',
+    KO: '한국어',
+    AR: 'العربية'
+};
+
+const EXAMS = {
+    EN: {
+        'IELTS': ['Band 5.0','Band 5.5','Band 6.0','Band 6.5','Band 7.0','Band 7.5','Band 8.0','Band 8.5','Band 9.0'],
+        'TOEFL': ['Basic', 'Basic+', 'Intermediate', 'Intermediate+','Advanced'],
+        'TOEIC Writing': ['Basic', 'Basic+', 'Intermediate', 'Intermediate+','Advanced'],
+        'Cambridge English': ['B1', 'B2', 'C1'],
+        'PTE Academic': ['50+', '65+', '79+']
+    },
+    FR: {
+        'DELF': ['A1', 'A2', 'B1', 'B2'],
+        'DALF': ['C1', 'C2'],
+        'TCF': ['A2', 'B1', 'B2', 'C1'],
+        'TEF': ['A2', 'B1', 'B2', 'C1'],
+        '仏検': ['5級', '4級', '3級', '準2級', '2級', '準1級', '1級']},
+    ES: {
+        'DELE': ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
+        'SIELE': ['A2', 'B1', 'B2', 'C1'],
+        'CELU': ['B1', 'B2', 'C1']
+    },
+    DE: {
+        'Goethe': ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
+        'TestDaF': ['TDN3', 'TDN4', 'TDN5'],
+        'telc Deutsch': ['B1', 'B2', 'C1']
+    },
+    IT: {
+        'CILS': ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
+        'CELI': ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
+        'PLIDA': ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
+    },
+    PT: {
+        'CELPE-Bras': ['Intermediário', 'Intermediário Superior', 'Avançado', 'Avançado Superior'],
+        'CAPLE': ['A2', 'B1', 'B2', 'C1', 'C2']
+    },
+    ZH: {
+        'HSK Writing': ['HSK 1', 'HSK 2', 'HSK 3', 'HSK 4', 'HSK 5', 'HSK 6'],
+        'HSKK': ['初級', '中級', '高級']
+    },
+    JA: {
+        'JLPT Writing Practice': ['N5', 'N4', 'N3', 'N2', 'N1']
+    },
+    KO: {
+        'TOPIK Writing': ['TOPIK I', 'TOPIK II']
+    },
+    AR: {
+        'ALPT': ['A2', 'B1', 'B2', 'C1'],
+        'CEFR Arabic Writing': ['A2', 'B1', 'B2', 'C1']
+    }
+};
+
+const FOCUS_OPTIONS = {
+    'IELTS': [
+        'Opinion',
+        'Discussion',
+        'Advantages and Disadvantages',
+        'Problem and Solution',
+        'Cause and Effect',
+        'Comparison',
+        'Data Description',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'Band-style Sentence Training'
+    ],
+    'TOEFL': [
+        'Opinion Development',
+        'Supporting Reasons',
+        'Examples',
+        'Comparison',
+        'Cause and Effect',
+        'Integrated-style Summary',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'Academic Sentence Training'
+    ],
+    'TOEIC Writing': [
+        'Email Response',
+        'Opinion Sentence',
+        'Clarity',
+        'Politeness / Tone',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'Business Sentence Training'
+    ],
+    'Cambridge English': [
+        'Content Development',
+        'Communicative Style',
+        'Organisation',
+        'Formal / Informal Tone',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'Exam-style Sentence Training'
+    ],
+    'PTE Academic': [
+        'Opinion Sentence',
+        'Argument Building',
+        'Summary Sentence',
+        'Coherence',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'Academic Sentence Training'
+    ],
+
+    'DELF': [
+        'Opinion',
+        'Comparison',
+        'Cause and Effect',
+        'Formal Expression',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'CEFR Sentence Training'
+    ],
+    'DALF': [
+        'Abstract Opinion',
+        'Argument Development',
+        'Critical Discussion',
+        'Formal Expression',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'Advanced Sentence Training'
+    ],
+    'TCF': [
+        'Opinion',
+        'Comparison',
+        'Explanation',
+        'Formal Expression',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'CEFR Sentence Training'
+    ],
+    'TEF': [
+        'Opinion',
+        'Comparison',
+        'Explanation',
+        'Formal Expression',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'CEFR Sentence Training'
+    ],
+    '仏検': [
+        'Basic Expression',
+        'Opinion',
+        'Comparison',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'Sentence Training'
+    ],
+
+    'DELE': [
+        'Opinion',
+        'Comparison',
+        'Cause and Effect',
+        'Formal Expression',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'CEFR Sentence Training'
+    ],
+    'SIELE': [
+        'Opinion',
+        'Explanation',
+        'Comparison',
+        'Formal Expression',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'CEFR Sentence Training'
+    ],
+    'CELU': [
+        'Opinion',
+        'Explanation',
+        'Comparison',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'Sentence Training'
+    ],
+
+    'Goethe': [
+        'Opinion',
+        'Explanation',
+        'Comparison',
+        'Formal Expression',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'CEFR Sentence Training'
+    ],
+    'TestDaF': [
+        'Diagram Description',
+        'Opinion',
+        'Comparison',
+        'Formal Academic Style',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'Academic Sentence Training'
+    ],
+    'telc Deutsch': [
+        'Opinion',
+        'Explanation',
+        'Comparison',
+        'Formal Expression',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'Sentence Training'
+    ],
+
+    'CILS': [
+        'Opinion',
+        'Explanation',
+        'Comparison',
+        'Formal Expression',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'CEFR Sentence Training'
+    ],
+    'CELI': [
+        'Opinion',
+        'Explanation',
+        'Comparison',
+        'Formal Expression',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'CEFR Sentence Training'
+    ],
+    'PLIDA': [
+        'Opinion',
+        'Explanation',
+        'Comparison',
+        'Formal Expression',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'CEFR Sentence Training'
+    ],
+
+    'CELPE-Bras': [
+        'Opinion',
+        'Explanation',
+        'Comparison',
+        'Formal Expression',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'Sentence Training'
+    ],
+    'CAPLE': [
+        'Opinion',
+        'Explanation',
+        'Comparison',
+        'Formal Expression',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'CEFR Sentence Training'
+    ],
+
+    'HSK Writing': [
+        'Basic Sentence',
+        'Narrative Sentence',
+        'Comparison',
+        'Explanation',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'HSK Sentence Training'
+    ],
+    'HSKK': [
+        'Basic Expression',
+        'Explanation',
+        'Opinion',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'Sentence Training'
+    ],
+
+    'JLPT Writing Practice': [
+        'Basic Sentence',
+        'Opinion',
+        'Comparison',
+        'Explanation',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'JLPT-style Sentence Training'
+    ],
+
+    'TOPIK Writing': [
+        'Opinion',
+        'Comparison',
+        'Cause and Effect',
+        'Explanation',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'TOPIK Sentence Training'
+    ],
+
+    'ALPT': [
+        'Opinion',
+        'Comparison',
+        'Explanation',
+        'Formal Expression',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'CEFR Sentence Training'
+    ],
+    'CEFR Arabic Writing': [
+        'Opinion',
+        'Comparison',
+        'Explanation',
+        'Formal Expression',
+        'Vocabulary Upgrade',
+        'Grammar Upgrade',
+        'CEFR Sentence Training'
+    ]
+};
+
+const CHAR_PANELS = {
+    FR: ['é', 'è', 'ê', 'ë', 'à', 'â', 'æ', 'ç', 'î', 'ï', 'ô', 'œ', 'ù', 'û', 'ü', 'ÿ', 'É', 'È', 'Ê', 'À', 'Ç'],
+    ES: ['á', 'é', 'í', 'ó', 'ú', 'ü', 'ñ', '¿', '¡', 'Á', 'É', 'Í', 'Ó', 'Ú', 'Ñ'],
+    DE: ['ä', 'ö', 'ü', 'ß', 'Ä', 'Ö', 'Ü'],
+    IT: ['à', 'è', 'é', 'ì', 'ò', 'ù', 'À', 'È', 'É', 'Ì', 'Ò', 'Ù'],
+    PT: ['á', 'â', 'ã', 'à', 'ç', 'é', 'ê', 'í', 'ó', 'ô', 'õ', 'ú', 'ü', 'Á', 'Â', 'Ã', 'À', 'Ç', 'É'],
+    EN: ["'", "'", '"', '"', '—', '–'],
+ZH: ['。', '，', '、', '！', '？', '：', '；', '"', '"', "'", "'", '（', '）', '【', '】'],
+    JA: ['あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ', 'た', 'ち', 'つ', 'て', 'と', 'な', 'に', 'ぬ', 'ね', 'の', 'は', 'ひ', 'ふ', 'へ', 'ほ', 'ま', 'み', 'む', 'め', 'も', 'や', 'ゆ', 'よ', 'ら', 'り', 'る', 'れ', 'ろ', 'わ', 'を', 'ん', 'が', 'ぎ', 'ぐ', 'げ', 'ご', 'ざ', 'じ', 'ず', 'ぜ', 'ぞ', 'だ', 'ぢ', 'づ', 'で', 'ど', 'ば', 'び', 'ぶ', 'べ', 'ぼ', 'ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ', 'ゃ', 'ゅ', 'ょ', 'っ', 'ー', '。', '、'],
+    KO: ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ', 'ㅏ', 'ㅑ', 'ㅓ', 'ㅕ', 'ㅗ', 'ㅛ', 'ㅜ', 'ㅠ', 'ㅡ', 'ㅣ', '은', '는', '이', '가', '을', '를', '의', '에', '와', '과', '。', '，'],
+    AR: ['ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي', 'َ', 'ِ', 'ُ', 'ّ', 'ْ', '؟', '،']
+};
+
+const TRANSLATIONS = {
+    JA: {
+        appTitle: '多言語AIライティングアプリ',
+        navHome: 'ホーム',
+        navPractice: '練習',
+        navNotebook: 'ミスノート',
+        navReview: '復習テスト',
+        labelTargetLang: '学習言語を選択',
+        labelExam: '試験タイプを選択',
+        labelLevel: 'レベルを選択',
+        labelFocus: 'フォーカスを選択',
+        btnNewPractice: '新しい練習を開始',
+        btnMistakeNotebook: 'ミスノート',
+        btnReviewTest: '復習テスト',
+        labelAnswer: 'あなたの回答',
+        btnCorrect: '添削 & スコア表示',
+        btnBackToHome: 'ホームに戻る',
+        scoreDisclaimer: '推定スコア（学習用。公式採点ではありません）',
+        voiceInput: '音声入力',
+        mobileTip: 'お使いの端末に{lang}キーボードが無い場合は、文字パネル/音声入力をご利用ください。',
+        keyboardHelp: 'キーボードの追加方法'
+    },
+    EN: {
+        appTitle: 'Multilingual AI Writing App',
+        navHome: 'Home',
+        navPractice: 'Practice',
+        navNotebook: 'Mistake Notebook',
+        navReview: 'Review Test',
+        labelTargetLang: 'Select Target Language',
+        labelExam: 'Select Exam Type',
+        labelLevel: 'Select Level',
+        labelFocus: 'Select Focus',
+        btnNewPractice: 'Start New Practice',
+        btnMistakeNotebook: 'Mistake Notebook',
+        btnReviewTest: 'Review Test',
+        labelAnswer: 'Your Answer',
+        btnCorrect: 'Correct & Score',
+        btnBackToHome: 'Back to Home',
+        scoreDisclaimer: 'Estimated score for learning (not official).',
+        voiceInput: 'Voice Input',
+        mobileTip: 'If you don\'t have {lang} keyboard, use character panel or voice input.',
+        keyboardHelp: 'How to add keyboard'
+    },
+    FR: {
+        appTitle: 'Application d\'écriture IA multilingue',
+        navHome: 'Accueil',
+        navPractice: 'Pratique',
+        navNotebook: 'Cahier d\'erreurs',
+        navReview: 'Test de révision',
+        labelTargetLang: 'Sélectionner la langue cible',
+        labelExam: 'Sélectionner le type d\'examen',
+        labelLevel: 'Sélectionner le niveau',
+        labelFocus: 'Sélectionner le focus',
+        btnNewPractice: 'Commencer une nouvelle pratique',
+        btnMistakeNotebook: 'Cahier d\'erreurs',
+        btnReviewTest: 'Test de révision',
+        labelAnswer: 'Votre réponse',
+        btnCorrect: 'Corriger et noter',
+        btnBackToHome: 'Retour à l\'accueil',
+        scoreDisclaimer: 'Score estimé pour l\'apprentissage (non officiel).',
+        voiceInput: 'Entrée vocale',
+        mobileTip: 'Si vous n\'avez pas de clavier {lang}, utilisez le panneau de caractères ou l\'entrée vocale.',
+        keyboardHelp: 'Comment ajouter un clavier'
+    },
+    ES: {
+        appTitle: 'Aplicación multilingüe de escritura con IA',
+        navHome: 'Inicio',
+        navPractice: 'Práctica',
+        navNotebook: 'Cuaderno de errores',
+        navReview: 'Prueba de revisión',
+        labelTargetLang: 'Seleccionar idioma objetivo',
+        labelExam: 'Seleccionar tipo de examen',
+        labelLevel: 'Seleccionar nivel',
+        labelFocus: 'Seleccionar enfoque',
+        btnNewPractice: 'Comenzar nueva práctica',
+        btnMistakeNotebook: 'Cuaderno de errores',
+        btnReviewTest: 'Prueba de revisión',
+        labelAnswer: 'Tu respuesta',
+        btnCorrect: 'Corregir y puntuar',
+        btnBackToHome: 'Volver al inicio',
+        scoreDisclaimer: 'Puntuación estimada para aprendizaje (no oficial).',
+        voiceInput: 'Entrada de voz',
+        mobileTip: 'Si no tiene teclado {lang}, use el panel de caracteres o entrada de voz.',
+        keyboardHelp: 'Cómo agregar teclado'
+    },
+    DE: {
+        appTitle: 'Mehrsprachige KI-Schreibapp',
+        navHome: 'Startseite',
+        navPractice: 'Übung',
+        navNotebook: 'Fehlerheft',
+        navReview: 'Wiederholungstest',
+        labelTargetLang: 'Zielsprache auswählen',
+        labelExam: 'Prüfungstyp auswählen',
+        labelLevel: 'Level auswählen',
+        labelFocus: 'Fokus auswählen',
+        btnNewPractice: 'Neue Übung starten',
+        btnMistakeNotebook: 'Fehlerheft',
+        btnReviewTest: 'Wiederholungstest',
+        labelAnswer: 'Ihre Antwort',
+        btnCorrect: 'Korrigieren und bewerten',
+        btnBackToHome: 'Zurück zur Startseite',
+        scoreDisclaimer: 'Geschätzte Punktzahl zum Lernen (nicht offiziell).',
+        voiceInput: 'Spracheingabe',
+        mobileTip: 'Wenn Sie keine {lang}-Tastatur haben, verwenden Sie das Zeichenfeld oder die Spracheingabe.',
+        keyboardHelp: 'So fügen Sie eine Tastatur hinzu'
+    },
+    IT: {
+        appTitle: 'App multilingue di scrittura con IA',
+        navHome: 'Home',
+        navPractice: 'Pratica',
+        navNotebook: 'Quaderno errori',
+        navReview: 'Test di revisione',
+        labelTargetLang: 'Seleziona lingua target',
+        labelExam: 'Seleziona tipo di esame',
+        labelLevel: 'Seleziona livello',
+        labelFocus: 'Seleziona focus',
+        btnNewPractice: 'Inizia nuova pratica',
+        btnMistakeNotebook: 'Quaderno errori',
+        btnReviewTest: 'Test di revisione',
+        labelAnswer: 'La tua risposta',
+        btnCorrect: 'Correggi e valuta',
+        btnBackToHome: 'Torna alla home',
+        scoreDisclaimer: 'Punteggio stimato per l\'apprendimento (non ufficiale).',
+        voiceInput: 'Input vocale',
+        mobileTip: 'Se non hai la tastiera {lang}, usa il pannello caratteri o l\'input vocale.',
+        keyboardHelp: 'Come aggiungere una tastiera'
+    },
+    PT: {
+        appTitle: 'Aplicativo multilíngue de escrita com IA',
+        navHome: 'Início',
+        navPractice: 'Prática',
+        navNotebook: 'Caderno de erros',
+        navReview: 'Teste de revisão',
+        labelTargetLang: 'Selecionar idioma alvo',
+        labelExam: 'Selecionar tipo de exame',
+        labelLevel: 'Selecionar nível',
+        labelFocus: 'Selecionar foco',
+        btnNewPractice: 'Iniciar nova prática',
+        btnMistakeNotebook: 'Caderno de erros',
+        btnReviewTest: 'Teste de revisão',
+        labelAnswer: 'Sua resposta',
+        btnCorrect: 'Corrigir e pontuar',
+        btnBackToHome: 'Voltar ao início',
+        scoreDisclaimer: 'Pontuação estimada para aprendizado (não oficial).',
+        voiceInput: 'Entrada de voz',
+        mobileTip: 'Se você não tem teclado {lang}, use o painel de caracteres ou entrada de voz.',
+        keyboardHelp: 'Como adicionar teclado'
+    },
+    ZH: {
+        appTitle: '多语言AI写作应用',
+        navHome: '主页',
+        navPractice: '练习',
+        navNotebook: '错误笔记',
+        navReview: '复习测试',
+        labelTargetLang: '选择目标语言',
+        labelExam: '选择考试类型',
+        labelLevel: '选择级别',
+        labelFocus: '选择重点',
+        btnNewPractice: '开始新练习',
+        btnMistakeNotebook: '错误笔记',
+        btnReviewTest: '复习测试',
+        labelAnswer: '您的回答',
+        btnCorrect: '批改和评分',
+        btnBackToHome: '返回主页',
+        scoreDisclaimer: '学习用估计分数（非官方）。',
+        voiceInput: '语音输入',
+        mobileTip: '如果您没有{lang}键盘，请使用字符面板或语音输入。',
+        keyboardHelp: '如何添加键盘'
+    },
+    KO: {
+        appTitle: '다국어 AI 글쓰기 앱',
+        navHome: '홈',
+        navPractice: '연습',
+        navNotebook: '실수 노트',
+        navReview: '복습 테스트',
+        labelTargetLang: '목표 언어 선택',
+        labelExam: '시험 유형 선택',
+        labelLevel: '레벨 선택',
+        labelFocus: '포커스 선택',
+        btnNewPractice: '새 연습 시작',
+        btnMistakeNotebook: '실수 노트',
+        btnReviewTest: '복습 테스트',
+        labelAnswer: '답변',
+        btnCorrect: '채점 및 점수',
+        btnBackToHome: '홈으로',
+        scoreDisclaimer: '학습용 예상 점수 (비공식).',
+        voiceInput: '음성 입력',
+        mobileTip: '{lang} 키보드가 없으면 문자 패널이나 음성 입력을 사용하세요.',
+        keyboardHelp: '키보드 추가 방법'
+    },
+    AR: {
+        appTitle: 'تطبيق كتابة بالذكاء الاصطناعي متعدد اللغات',
+        navHome: 'الرئيسية',
+        navPractice: 'ممارسة',
+        navNotebook: 'دفتر الأخطاء',
+        navReview: 'اختبار المراجعة',
+        labelTargetLang: 'اختر اللغة المستهدفة',
+        labelExam: 'اختر نوع الاختبار',
+        labelLevel: 'اختر المستوى',
+        labelFocus: 'اختر التركيز',
+        btnNewPractice: 'ابدأ ممارسة جديدة',
+        btnMistakeNotebook: 'دفتر الأخطاء',
+        btnReviewTest: 'اختبار المراجعة',
+        labelAnswer: 'إجابتك',
+        btnCorrect: 'تصحيح وتقييم',
+        btnBackToHome: 'العودة للرئيسية',
+        scoreDisclaimer: 'درجة تقديرية للتعلم (غير رسمية).',
+        voiceInput: 'إدخال صوتي',
+        mobileTip: 'إذا لم يكن لديك لوحة مفاتيح {lang}، استخدم لوحة الأحرف أو الإدخال الصوتي.',
+        keyboardHelp: 'كيفية إضافة لوحة مفاتيح'
+    }
+};
+
+// State
+let currentState = {
+    uiLang: 'JA',
+    feedbackLang: 'JA',
+    targetLang: 'EN',
+    exam: '',
+    level: '',
+    focus: '',
+    prompt: '',
+    userAnswer: '',
+    currentPage: 'home',
+    mistakes: []
+};
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    loadState();
+    initializeUI();
+    setupEventListeners();
+    renderUI();
+});
+
+function loadState() {
+    const saved = localStorage.getItem('appState');
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        currentState = { ...currentState, ...parsed };
+    }
+    
+    const mistakes = localStorage.getItem('mistakes');
+    if (mistakes) {
+        currentState.mistakes = JSON.parse(mistakes);
+    }
+}
+
+function saveState() {
+    const toSave = { ...currentState };
+    delete toSave.mistakes;
+    localStorage.setItem('appState', JSON.stringify(toSave));
+    localStorage.setItem('mistakes', JSON.stringify(currentState.mistakes));
+}
+
+function initializeUI() {
+    const toggleCharPanelBtn = document.getElementById('toggleCharPanelBtn');
+    const charPanel = document.getElementById('charPanel');
+
+    charPanel.classList.add('collapsed');
+
+    toggleCharPanelBtn.addEventListener('click', () => {
+        charPanel.classList.toggle('collapsed');
+        updateCharPanelToggleText();
+    });
+    // Populate target language select
+    const targetLangSelect = document.getElementById('targetLangSelect');
+    Object.entries(LANGUAGES).forEach(([code, name]) => {
+        const option = document.createElement('option');
+        option.value = code;
+        option.textContent = name;
+        targetLangSelect.appendChild(option);
+    });
+    targetLangSelect.value = currentState.targetLang;
+    
+    // Set UI language
+    document.getElementById('uiLangSelect').value = currentState.uiLang;
+    document.getElementById('feedbackLangSelect').value = currentState.feedbackLang;
+    
+    updateExamOptions();
+    renderNavTabs();
+}
+
+function renderNavTabs() {
+    const navTabs = document.getElementById('navTabs');
+    const t = TRANSLATIONS[currentState.uiLang];
+
+    navTabs.innerHTML = '';
+
+    const tabs = [
+        { page: 'home', label: t.navHome },
+        { page: 'notebook', label: t.navNotebook },
+        { page: 'review', label: t.navReview }
+    ];
+
+    tabs.forEach(tab => {
+        const btn = document.createElement('button');
+        btn.className = 'tab-btn';
+        if (currentState.currentPage === tab.page) {
+            btn.classList.add('active');
+        }
+        btn.dataset.page = tab.page;
+        btn.textContent = tab.label;
+
+        btn.addEventListener('click', () => {
+            navigateTo(tab.page);
+        });
+
+        navTabs.appendChild(btn);
+    });
+}
+
+function navigateTo(page) {
+    currentState.currentPage = page;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    
+    const pageMap = {
+        home: 'homePage',
+        practice: 'practicePage',
+        notebook: 'mistakeNotebookPage',
+        review: 'reviewTestPage'
+    };
+    
+    document.getElementById(pageMap[page])?.classList.add('active');
+    renderNavTabs();
+    
+    if (page === 'notebook') {
+        renderMistakeNotebook();
+    } else if (page === 'review') {
+        renderReviewTest();
+    }
+}
+
+function setupEventListeners() {
+    document.getElementById('uiLangSelect').addEventListener('change', (e) => {
+        currentState.uiLang = e.target.value;
+        saveState();
+        renderUI();
+    });
+    
+    document.getElementById('feedbackLangSelect').addEventListener('change', (e) => {
+        currentState.feedbackLang = e.target.value;
+        saveState();
+    });
+    
+    document.getElementById('targetLangSelect').addEventListener('change', (e) => {
+        currentState.targetLang = e.target.value;
+        currentState.uiLang = e.target.value === 'EN' ? 'EN' : e.target.value;
+        document.getElementById('uiLangSelect').value = currentState.uiLang;
+        saveState();
+        updateExamOptions();
+        renderUI();
+        updateCharPanel();
+    });
+    
+    document.getElementById('examSelect').addEventListener('change', (e) => {
+        currentState.exam = e.target.value;
+        updateLevelOptions();
+        updateFocusOptions();
+        saveState();
+    });
+    
+    document.getElementById('levelSelect').addEventListener('change', (e) => {
+        currentState.level = e.target.value;
+        saveState();
+    });
+    
+    document.getElementById('focusSelect').addEventListener('change', (e) => {
+        currentState.focus = e.target.value;
+        saveState();
+    });
+    
+    document.getElementById('newPracticeBtn').addEventListener('click', startNewPractice);
+    document.getElementById('mistakeNotebookBtn').addEventListener('click', () => navigateTo('notebook'));
+    document.getElementById('reviewTestBtn').addEventListener('click', () => navigateTo('review'));
+    document.getElementById('backToHomeBtn').addEventListener('click', () => navigateTo('home'));
+    document.getElementById('backFromNotebookBtn').addEventListener('click', () => navigateTo('home'));
+    document.getElementById('correctBtn').addEventListener('click', correctAnswer);
+    document.getElementById('closeMistakeDetailBtn').addEventListener('click', () => {
+        document.getElementById('mistakeDetailModal').classList.remove('active');
+    });
+
+    document.getElementById('filterLang').addEventListener('change', renderMistakeList);
+    document.getElementById('filterExam').addEventListener('change', renderMistakeList);
+    document.getElementById('filterStatus').addEventListener('change', renderMistakeList);
+    
+    setupVoiceInput();
+}
+
+function renderUI() {
+    const t = TRANSLATIONS[currentState.uiLang];
+
+    document.body.classList.remove('lang-ja');
+
+    updateCharPanelToggleText();
+
+    if (currentState.uiLang === 'JA') {
+        document.body.classList.add('lang-ja');
+    }
+
+    document.getElementById('appTitle').textContent = t.appTitle;
+    document.getElementById('labelTargetLang').textContent = t.labelTargetLang;
+    document.getElementById('labelExam').textContent = t.labelExam;
+    document.getElementById('labelLevel').textContent = t.labelLevel;
+    document.getElementById('labelFocus').textContent = t.labelFocus;
+    document.getElementById('newPracticeBtn').textContent = t.btnNewPractice;
+    document.getElementById('mistakeNotebookBtn').textContent = t.btnMistakeNotebook;
+    document.getElementById('reviewTestBtn').textContent = t.btnReviewTest;
+    document.getElementById('labelAnswer').textContent = t.labelAnswer;
+    document.getElementById('correctBtn').textContent = t.btnCorrect;
+    document.getElementById('backToHomeBtn').textContent = t.btnBackToHome;
+    document.getElementById('backFromNotebookBtn').textContent = t.btnBackToHome;
+    document.getElementById('voiceBtnText').textContent = t.voiceInput;
+    
+    document.title = t.appTitle;
+    
+    if (currentState.uiLang === 'AR') {
+        document.body.setAttribute('dir', 'rtl');
+    } else {
+        document.body.removeAttribute('dir');
+    }
+    
+    const toggleCharPanelBtn = document.getElementById('toggleCharPanelBtn');
+    const panelLanguages = ['JA', 'ZH', 'KO', 'AR'];
+
+    if (panelLanguages.includes(currentState.targetLang)) {
+        toggleCharPanelBtn.style.display = 'block';
+    } else {
+        toggleCharPanelBtn.style.display = 'none';
+        document.getElementById('charPanel').classList.add('collapsed');
+    }
+
+    renderNavTabs();
+}
+
+function updateExamOptions() {
+    const examSelect = document.getElementById('examSelect');
+    examSelect.innerHTML = '';
+    
+    const exams = EXAMS[currentState.targetLang] || {};
+    Object.keys(exams).forEach(exam => {
+        const option = document.createElement('option');
+        option.value = exam;
+        option.textContent = exam;
+        examSelect.appendChild(option);
+    });
+    
+    if (examSelect.options.length > 0) {
+        currentState.exam = examSelect.options[0].value;
+        examSelect.value = currentState.exam;
+    }
+    
+    updateLevelOptions();
+    updateFocusOptions();
+}
+
+function updateLevelOptions() {
+    const levelSelect = document.getElementById('levelSelect');
+    levelSelect.innerHTML = '';
+    
+    const levels = EXAMS[currentState.targetLang]?.[currentState.exam] || [];
+    levels.forEach(level => {
+        const option = document.createElement('option');
+        option.value = level;
+        option.textContent = level;
+        levelSelect.appendChild(option);
+    });
+    
+    if (levelSelect.options.length > 0) {
+        currentState.level = levelSelect.options[0].value;
+        levelSelect.value = currentState.level;
+    }
+}
+
+function updateFocusOptions() {
+    const focusSelect = document.getElementById('focusSelect');
+    focusSelect.innerHTML = '';
+    
+    const focuses = FOCUS_OPTIONS[currentState.exam] || [];
+    focuses.forEach(focus => {
+        const option = document.createElement('option');
+        option.value = focus;
+        option.textContent = focus;
+        focusSelect.appendChild(option);
+    });
+    
+    if (focusSelect.options.length > 0) {
+        currentState.focus = focusSelect.options[0].value;
+        focusSelect.value = currentState.focus;
+    }
+}
+
+async function startNewPractice() {
+    const btn = document.getElementById('newPracticeBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Loading...';
+
+    try {
+        const askUrl = 'https://multiple-language-writing-app.vercel.app/api/ask';
+
+        console.log('ASK URL =', askUrl);
+        console.log('ASK BODY =', {
+            targetLanguage: currentState.targetLang,
+            examType: currentState.exam,
+            level: currentState.level,
+            focus: currentState.focus,
+            uiLang: currentState.uiLang
+        });
+
+        const response = await fetch(askUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                targetLanguage: currentState.targetLang,
+                examType: currentState.exam,
+                level: currentState.level,
+                focus: currentState.focus,
+                uiLang: currentState.uiLang
+            })
+        });
+
+        console.log('ASK RESPONSE STATUS =', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('ASK RESPONSE TEXT =', errorText);
+            throw new Error('Failed to generate prompt');
+        }
+
+        const data = await response.json();
+        console.log('ASK RESPONSE JSON =', data);
+
+        currentState.currentPrompt = data.text;
+
+        document.getElementById('promptDisplay').innerHTML = `<h3>Prompt:</h3><p>${data.text}</p>`;
+        document.getElementById('answerTextarea').value = '';
+        document.getElementById('resultDisplay').style.display = 'none';
+
+    } catch (error) {
+        console.error('ASK ERROR FULL =', error);
+        console.error('ASK ERROR MESSAGE =', error?.message);
+        console.error('ASK ERROR STACK =', error?.stack);
+        alert('Error generating prompt: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Start New Practice';
+    }
+}
+
+function updateCharPanel() {
+    const charPanel = document.getElementById('charPanel');
+    const chars = CHAR_PANELS[currentState.targetLang];
+    
+    if (!chars) {
+        charPanel.style.display = 'none';
+        return;
+    }
+    
+    charPanel.innerHTML = '<div style="margin-bottom: 10px;"><strong>文字パネル / Character Pad:</strong></div>';
+    const btnContainer = document.createElement('div');
+    
+    chars.forEach(char => {
+        const btn = document.createElement('button');
+        btn.className = 'char-btn';
+        btn.textContent = char;
+        btn.type = 'button';
+        btn.addEventListener('click', () => {
+            insertAtCursor(char);
+        });
+        btnContainer.appendChild(btn);
+    });
+    
+    const spaceBtn = document.createElement('button');
+    spaceBtn.className = 'char-btn';
+    spaceBtn.textContent = 'Space';
+    spaceBtn.type = 'button';
+    spaceBtn.addEventListener('click', () => insertAtCursor(' '));
+    btnContainer.appendChild(spaceBtn);
+    
+    const backspaceBtn = document.createElement('button');
+    backspaceBtn.className = 'char-btn';
+    backspaceBtn.textContent = '⌫ Back';
+    backspaceBtn.type = 'button';
+    backspaceBtn.addEventListener('click', () => {
+        const textarea = document.getElementById('answerTextarea');
+        const start = textarea.selectionStart;
+        if (start > 0) {
+            textarea.value = textarea.value.slice(0, start - 1) + textarea.value.slice(start);
+            textarea.selectionStart = textarea.selectionEnd = start - 1;
+        }
+    });
+    btnContainer.appendChild(backspaceBtn);
+    
+    charPanel.appendChild(btnContainer);
+    charPanel.classList.add('active');
+}
+
+function insertAtCursor(text) {
+    const textarea = document.getElementById('answerTextarea');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const before = textarea.value.substring(0, start);
+    const after = textarea.value.substring(end);
+    
+    textarea.value = before + text + after;
+    textarea.selectionStart = textarea.selectionEnd = start + text.length;
+    textarea.focus();
+}
+
+function updateMobileTip() {
+    const tip = document.getElementById('mobileTipBanner');
+    const t = TRANSLATIONS[currentState.uiLang];
+    const langName = LANGUAGES[currentState.targetLang];
+    
+    if (/Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        tip.innerHTML = t.mobileTip.replace('{lang}', langName);
+        tip.style.display = 'block';
+    } else {
+        tip.style.display = 'none';
+    }
+}
+
+function setupVoiceInput() {
+    const voiceBtn = document.getElementById('voiceInputBtn');
+    
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        voiceBtn.style.display = 'none';
+        return;
+    }
+    
+    voiceBtn.style.display = 'block';
+    
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    const langMap = {
+        EN: 'en-US', FR: 'fr-FR', ES: 'es-ES', DE: 'de-DE',
+        IT: 'it-IT', PT: 'pt-PT', ZH: 'zh-CN', JA: 'ja-JP',
+        KO: 'ko-KR', AR: 'ar-SA'
+    };
+    
+    voiceBtn.addEventListener('click', () => {
+        recognition.lang = langMap[currentState.targetLang] || 'en-US';
+        recognition.start();
+        voiceBtn.disabled = true;
+        voiceBtn.innerHTML = '🎤 <span id="voiceBtnText">Listening...</span>';
+    });
+    
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('answerTextarea').value += transcript + ' ';
+    };
+    
+    recognition.onend = () => {
+        voiceBtn.disabled = false;
+        voiceBtn.innerHTML = '🎤 <span id="voiceBtnText">' + TRANSLATIONS[currentState.uiLang].voiceInput + '</span>';
+    };
+    
+    recognition.onerror = () => {
+        voiceBtn.disabled = false;
+        voiceBtn.innerHTML = '🎤 <span id="voiceBtnText">' + TRANSLATIONS[currentState.uiLang].voiceInput + '</span>';
+    };
+}
+
+async function correctAnswer() {
+    const btn = document.getElementById('correctBtn');
+    const userAnswer = document.getElementById('answerTextarea').value.trim();
+    
+    if (!userAnswer) {
+        alert('Please enter your answer');
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Correcting...';
+    
+    try {
+        const response = await fetch('/api/correct', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                targetLanguage: currentState.targetLang,
+                examType: currentState.exam,
+                level: currentState.level,
+                focus: currentState.focus,
+                promptText: currentState.currentprompt,
+                userAnswer: userAnswer,
+                feedbackLanguage: currentState.feedbackLang
+            })
+        });
+        
+        if (!response.ok) {
+            let message = 'Unknown error';
+            try {
+                  const err = await response.json();
+                  message = err.error || message;
+             } catch {
+                    message = await response.text();
+             }
+             throw new Error(message);
+        }
+        
+        const result = await response.json();
+        displayResult(result, userAnswer);
+        
+        if (result.shouldAddToMistakes) {
+            addToMistakes(result, userAnswer);
+        }
+        
+    } catch (error) {
+        alert('Error correcting answer: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = TRANSLATIONS[currentState.uiLang].btnCorrect;
+    }
+}
+
+function renderScoreProgress(result) {
+    const examType = String(result.examType || currentState.exam || '');
+    const scoreText = String(result.overallScore || '');
+    const numericScore = parseFloat(scoreText);
+
+    if (isNaN(numericScore)) return '';
+
+    let maxScore = 9;
+    let label = 'Progress';
+
+    if (examType.includes('IELTS')) {
+        maxScore = 9;
+        label = 'Band Progress';
+    } else if (examType.includes('TOEFL')) {
+        maxScore = 5;
+        label = 'Score Progress';
+    } else if (examType.includes('TOEIC')) {
+        maxScore = 100;
+        label = 'Score Progress';
+    } else {
+        return '';
+    }
+
+    const percentage = Math.max(0, Math.min((numericScore / maxScore) * 100, 100));
+
+    return `
+        <div style="margin-top: 14px;">
+            <div style="display:flex; justify-content:space-between; font-size:13px; color:#444; margin-bottom:6px;">
+                <span>${label}</span>
+                <span>${numericScore} / ${maxScore}</span>
+            </div>
+            <div style="
+                width:100%;
+                height:12px;
+                background:#e5e7eb;
+                border-radius:999px;
+                overflow:hidden;
+            ">
+                <div style="
+                    width:${percentage}%;
+                    height:100%;
+                    background:#2563eb;
+                    border-radius:999px;
+                "></div>
+            </div>
+        </div>
+    `;
+}
+
+function renderIELTSBandScale() {
+    return `
+        <div style="
+            display:flex;
+            justify-content:space-between;
+            font-size:11px;
+            color:#666;
+            margin-top:6px;
+        ">
+            <span>0</span>
+            <span>1</span>
+            <span>2</span>
+            <span>3</span>
+            <span>4</span>
+            <span>5</span>
+            <span>6</span>
+            <span>7</span>
+            <span>8</span>
+            <span>9</span>
+        </div>
+    `;
+}
+
+function displayResult(result, userAnswer) {
+    const display = document.getElementById('resultDisplay');
+    const t = TRANSLATIONS[currentState.feedbackLang];
+
+    let vocabularyHTML = '';
+    if (result.vocabularyUpgrades && result.vocabularyUpgrades.length > 0) {
+    vocabularyHTML = `
+        <div style="background: #f3e8ff; padding: 15px; border-radius: 10px; margin: 20px 0;">
+            <h4>Vocabulary Level Up:</h4>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                ${result.vocabularyUpgrades.map(v => `
+                    <div style="background: white; padding: 12px; border-radius: 8px; border-left: 5px solid #8b5cf6;">
+                        <div><strong>${v.original || v.basic || ''}</strong> → <strong>${v.better || v.advanced || ''}</strong></div>
+                        <div style="font-size: 14px; color: #555; margin-top: 4px;">
+                            ${v.reason || v.example || ''}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        `;
+    }
+    
+    let rubricHTML = '';
+    if (result.rubricScores) {
+        rubricHTML = '<div class="rubric-grid">';
+        Object.entries(result.rubricScores).forEach(([key, value]) => {
+            rubricHTML += `<div class="rubric-item"><strong>${key}:</strong> ${value}</div>`;
+        });
+        rubricHTML += '</div>';
+    }
+    
+    let errorsHTML = '';
+    if (result.errors && result.errors.length > 0) {
+        errorsHTML = '<div class="error-list"><h4>Errors:</h4>';
+        result.errors.forEach(err => {
+            errorsHTML += `
+                <div class="error-item">
+                    <strong>${err.type}:</strong> ${err.description}<br>
+                    <strong>Fix:</strong> ${err.fix}<br>
+                    ${err.exampleBefore ? `<strong>Before:</strong> ${err.exampleBefore}<br>` : ''}
+                    ${err.exampleAfter ? `<strong>After:</strong> ${err.exampleAfter}` : ''}
+                </div>
+            `;
+        });
+        errorsHTML += '</div>';
+    }
+
+    display.innerHTML = `
+        <div class="score-display">
+        <div style="
+            background:#ffffff;
+            border-left:6px solid #2563eb;
+            padding:20px;
+            border-radius:12px;
+            margin:20px 0;
+        ">
+            <h3 style="color:#111; display:flex; align-items:center; gap:10px;">
+                <span>Overall Score:</span>
+                <span style="
+                    background:#dbeafe;
+                    color:#1d4ed8;
+                    font-size:14px;
+                    padding:4px 10px;
+                    border-radius:999px;
+                    font-weight:600;
+                ">
+                    ${result.overallScore}
+                </span>
+            </h3>
+
+            <p style="font-size: 12px; opacity: 0.9;">${t.scoreDisclaimer}</p>
+            ${renderScoreProgress(result)}
+            ${rubricHTML}
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+            <h4>Corrected Answer:</h4>
+            <p>${result.correctedAnswer}</p>
+        </div>
+        
+        <div style="background: #e7f3ff; padding: 15px; border-radius: 10px; margin: 20px 0;">
+            <h4>Summary:</h4>
+            <p>${result.summary}</p>
+        </div>
+        
+        ${result.goodPoints && result.goodPoints.length > 0 ? `
+            <div style="background: #d4edda; padding: 15px; border-radius: 10px; margin: 20px 0;">
+                <h4>Good Points:</h4>
+                <ul>${result.goodPoints.map(p => `<li>${p}</li>`).join('')}</ul>
+            </div>
+        ` : ''}
+        
+        ${result.improvements && result.improvements.length > 0 ? `
+            <div style="background: #fff3cd; padding: 15px; border-radius: 10px; margin: 20px 0;">
+                <h4>Areas for Improvement:</h4>
+                <ul>${result.improvements.map(p => `<li>${p}</li>`).join('')}</ul>
+            </div>
+        ` : ''}
+        
+        ${vocabularyHTML}
+
+        ${errorsHTML}
+        
+        ${result.finalAdvice ? `
+            <div style="background: #d1ecf1; padding: 15px; border-radius: 10px; margin: 20px 0;">
+                <h4>Final Advice:</h4>
+                <p>${result.finalAdvice}</p>
+            </div>
+        ` : ''}
+
+        <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+            <button id="nextQuestionBtn" style="
+                background: #111827;
+                color: white;
+                border: none;
+                border-radius: 10px;
+                padding: 12px 18px;
+                cursor: pointer;
+                font-size: 15px;
+            ">
+                Next Question
+            </button>
+        </div>
+    `;
+
+    saveSubmission(result, userAnswer);
+
+    renderMistakeNotes();
+    renderReviewHistory();
+
+    const nextBtn = document.getElementById('nextQuestionBtn');
+    if (nextBtn) {
+    nextBtn.addEventListener('click', goToNextQuestion);
+    }
+    
+    display.style.display = 'block';
+}
+
+function addToMistakes(result, userAnswer) {
+    const mistake = {
+        id: Date.now(),
+        targetLanguage: currentState.targetLang,
+        examType: currentState.exam,
+        level: currentState.level,
+        focus: currentState.focus,
+        prompt: currentState.currentprompt,
+        userAnswer: userAnswer,
+        correctedAnswer: result.correctedAnswer,
+        feedback: result,
+        createdAt: new Date().toISOString(),
+        attempts: [{ date: new Date().toISOString(), score: result.overallScore, errors: result.errors }],
+        status: 'active'
+    };
+    
+    currentState.mistakes.push(mistake);
+    saveState();
+}
+
+function renderMistakeNotebook() {
+    const filterLang = document.getElementById('filterLang');
+    const filterExam = document.getElementById('filterExam');
+    
+    filterLang.innerHTML = '<option value="">All Languages</option>';
+    Object.entries(LANGUAGES).forEach(([code, name]) => {
+        filterLang.innerHTML += `<option value="${code}">${name}</option>`;
+    });
+    
+    filterExam.innerHTML = '<option value="">All Exams</option>';
+    const allExams = new Set();
+    Object.values(EXAMS).forEach(exams => {
+        Object.keys(exams).forEach(exam => allExams.add(exam));
+    });
+    allExams.forEach(exam => {
+        filterExam.innerHTML += `<option value="${exam}">${exam}</option>`;
+    });
+    
+    renderMistakeList();
+}
+
+function renderMistakeList() {
+    const list = document.getElementById('mistakeList');
+    const langFilter = document.getElementById('filterLang').value;
+    const examFilter = document.getElementById('filterExam').value;
+    const statusFilter = document.getElementById('filterStatus').value;
+    
+    let filtered = currentState.mistakes.filter(m => {
+        if (langFilter && m.targetLanguage !== langFilter) return false;
+        if (examFilter && m.examType !== examFilter) return false;
+        if (statusFilter && m.status !== statusFilter) return false;
+        return true;
+    });
+    
+    if (filtered.length === 0) {
+        list.innerHTML = '<p>No mistakes found.</p>';
+        return;
+    }
+    
+    list.innerHTML = filtered.map(m => `
+        <div class="mistake-item" data-id="${m.id}">
+            <div>
+                <span class="badge ${m.status === 'mastered' ? 'badge-success' : 'badge-warning'}">
+                    ${m.status}
+                </span>
+                <strong>${LANGUAGES[m.targetLanguage]}</strong> - ${m.examType} ${m.level}
+            </div>
+            <p style="margin-top: 8px; font-size: 14px; color: #666;">
+                ${m.prompt.substring(0, 100)}...
+            </p>
+            <p style="margin-top: 4px; font-size: 12px; color: #999;">
+                ${new Date(m.createdAt).toLocaleDateString()}
+            </p>
+        </div>
+    `).join('');
+    
+    list.querySelectorAll('.mistake-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const id = parseInt(item.dataset.id);
+            showMistakeDetail(id);
+        });
+    });
+}
+
+function showMistakeDetail(id) {
+    const mistake = currentState.mistakes.find(m => m.id === id);
+    if (!mistake) return;
+    
+    const content = document.getElementById('mistakeDetailContent');
+    const result = mistake.feedback;
+    
+    let rubricHTML = '';
+    if (result.rubricScores) {
+        rubricHTML = '<div class="rubric-grid">';
+        Object.entries(result.rubricScores).forEach(([key, value]) => {
+            rubricHTML += `<div class="rubric-item" style="background: #f0f0f0;"><strong>${key}:</strong> ${value}</div>`;
+        });
+        rubricHTML += '</div>';
+    }
+    
+    let errorsHTML = '';
+    if (result.errors && result.errors.length > 0) {
+        errorsHTML = '<div class="error-list"><h4>Errors:</h4>';
+        result.errors.forEach(err => {
+            errorsHTML += `
+                <div class="error-item">
+                    <strong>${err.type}:</strong> ${err.description}<br>
+                    <strong>Fix:</strong> ${err.fix}
+                </div>
+            `;
+        });
+        errorsHTML += '</div>';
+    }
+    
+    content.innerHTML = `
+        <h2>Mistake Detail</h2>
+        <div style="margin: 20px 0;">
+            <span class="badge ${mistake.status === 'mastered' ? 'badge-success' : 'badge-warning'}">
+                ${mistake.status}
+            </span>
+            <strong>${LANGUAGES[mistake.targetLanguage]}</strong> - ${mistake.examType} ${mistake.level}
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 15px 0;">
+            <h4>Prompt:</h4>
+            <p>${mistake.prompt}</p>
+        </div>
+        
+        <div style="background: #fff3cd; padding: 15px; border-radius: 10px; margin: 15px 0;">
+            <h4>Your Answer:</h4>
+            <p>${mistake.userAnswer}</p>
+        </div>
+        
+        <div style="background: #d4edda; padding: 15px; border-radius: 10px; margin: 15px 0;">
+            <h4>Corrected Answer:</h4>
+            <p>${result.correctedAnswer}</p>
+        </div>
+        
+        <div style="background: #e7f3ff; padding: 15px; border-radius: 10px; margin: 15px 0;">
+            <h4>Overall Score: ${result.overallScore}</h4>
+            ${rubricHTML}
+        </div>
+        
+        ${errorsHTML}
+        
+        <div style="margin-top: 20px;">
+            <h4>Attempts: ${mistake.attempts.length}</h4>
+            ${mistake.attempts.map(a => `
+                <p style="font-size: 12px;">${new Date(a.date).toLocaleDateString()} - Score: ${a.score} - Errors: ${a.errors?.length || 0}</p>
+            `).join('')}
+        </div>
+    `;
+    
+    document.getElementById('mistakeDetailModal').classList.add('active');
+}
+
+function renderReviewTest() {
+    const content = document.getElementById('reviewTestContent');
+    const activeMistakes = currentState.mistakes.filter(m => m.status === 'active');
+    
+    if (activeMistakes.length === 0) {
+        content.innerHTML = '<p>No active mistakes to review. Great job!</p><button class="btn btn-secondary" onclick="navigateTo(\'home\')">Back to Home</button>';
+        return;
+    }
+    
+    const mistake = activeMistakes[Math.floor(Math.random() * activeMistakes.length)];
+    
+    content.innerHTML = `
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+            <h3>Review Test</h3>
+            <p><strong>${LANGUAGES[mistake.targetLanguage]}</strong> - ${mistake.examType} ${mistake.level}</p>
+            <p style="margin-top: 15px;">${mistake.prompt}</p>
+        </div>
+        
+        <div class="form-group">
+            <label>Your Answer:</label>
+            <textarea id="reviewAnswer" style="min-height: 200px;" placeholder="Write your answer here..."></textarea>
+        </div>
+        
+        <button class="btn" id="submitReviewBtn">Submit Review</button>
+        <button class="btn btn-secondary" onclick="navigateTo('home')">Back to Home</button>
+    `;
+    
+    document.getElementById('submitReviewBtn').addEventListener('click', async () => {
+        const answer = document.getElementById('reviewAnswer').value.trim();
+        if (!answer) {
+            alert('Please enter your answer');
+            return;
+        }
+        
+        const btn = document.getElementById('submitReviewBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Correcting...';
+        
+        try {
+            const response = await fetch('/api/correct', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    targetLanguage: mistake.targetLanguage,
+                    examType: mistake.examType,
+                    level: mistake.level,
+                    focus: mistake.focus,
+                    promptText: mistake.prompt,
+                    userAnswer: answer,
+                    feedbackLanguage: currentState.feedbackLang
+                })
+            });
+            
+            const result = await response.json();
+            
+            mistake.attempts.push({
+                date: new Date().toISOString(),
+                score: result.overallScore,
+                errors: result.errors
+            });
+            
+            const threshold = getThreshold(mistake.examType);
+            const meetsThreshold = checkThreshold(result.overallScore, threshold);
+            const recentAttempts = mistake.attempts.slice(-2);
+            
+            if (recentAttempts.length >= 2 &&
+                recentAttempts.every(a => checkThreshold(a.score, threshold) && (a.errors?.length || 0) <= 1)) {
+                mistake.status = 'mastered';
+                alert('Congratulations! You have mastered this mistake!');
+            }
+            
+            saveState();
+            
+            content.innerHTML += `
+                <div style="margin-top: 30px; background: #e7f3ff; padding: 20px; border-radius: 10px;">
+                    <h4>Result: ${result.overallScore}</h4>
+                    <p>Errors: ${result.errors?.length || 0}</p>
+                    <p>Status: ${mistake.status}</p>
+                </div>
+            `;
+            
+        } catch (error) {
+            alert('Error: ' + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Submit Review';
+        }
+    });
+}
+
+function getTargetScoreNumber(scoreText) {
+    if (!scoreText) return NaN;
+    const match = String(scoreText).match(/\d+(\.\d+)?/);
+    return match ? parseFloat(match[0]) : NaN;
+}
+
+function shouldAddToMistakes(result) {
+    const targetScore = parseFloat(localStorage.getItem('targetScore') || '7');
+    const actualScore = getTargetScoreNumber(result.overallScore);
+
+    if (isNaN(actualScore)) {
+        return Boolean(result.shouldAddToMistakes);
+    }
+
+    return actualScore < targetScore;
+}
+
+function getMistakeNotes() {
+    const history = JSON.parse(localStorage.getItem('answerHistory') || '[]');
+    return history.filter(item => item.inMistakeNote);
+}
+
+function getReviewHistory() {
+    return JSON.parse(localStorage.getItem('answerHistory') || '[]');
+}
+
+function renderMistakeNotes() {
+    const container = document.getElementById('mistakeNotesList');
+    if (!container) return;
+
+    const mistakes = getMistakeNotes();
+
+    if (mistakes.length === 0) {
+        container.innerHTML = '<p>No mistakes saved. Great job.</p>';
+        return;
+    }
+
+    container.innerHTML = mistakes.map(item => `
+        <div style="background: #fff8e1; border-radius: 10px; padding: 15px; margin-bottom: 12px; border-left: 5px solid #f4b400;">
+            <div style="font-size: 12px; color: #666; margin-bottom: 6px;">
+                ${new Date(item.date).toLocaleDateString()}
+            </div>
+            <div><strong>Prompt:</strong> ${item.prompt || ''}</div>
+            <div><strong>Your Answer:</strong> ${item.userAnswer || ''}</div>
+            <div><strong>Score:</strong> ${item.result?.overallScore || ''}</div>
+        </div>
+    `).join('');
+}
+
+function renderReviewHistory() {
+    const container = document.getElementById('reviewHistoryList');
+    if (!container) return;
+
+    const history = getReviewHistory();
+
+    if (history.length === 0) {
+        container.innerHTML = '<p>No review history yet.</p>';
+        return;
+    }
+
+    container.innerHTML = history.map(item => `
+        <div style="background: #f8f9fa; border-radius: 10px; padding: 15px; margin-bottom: 12px; border-left: 5px solid #6c757d;">
+            <div style="font-size: 12px; color: #666; margin-bottom: 6px;">
+                ${new Date(item.date).toLocaleDateString()}
+            </div>
+            <div><strong>Prompt:</strong> ${item.prompt || ''}</div>
+            <div><strong>Your Answer:</strong> ${item.userAnswer || ''}</div>
+            <div><strong>Score:</strong> ${item.result?.overallScore || ''}</div>
+        </div>
+    `).join('');
+}
+
+function getThreshold(examType) {
+    if (examType.includes('IELTS')) return { type: 'numeric', value: 7.0 };
+    if (examType.includes('TOEFL')) return { type: 'numeric', value: 4.0 };
+    if (examType.includes('TOEIC')) return { type: 'numeric', value: 80 };
+    return { type: 'letter', value: 'B' };
+}
+
+function saveSubmission(result, userAnswer) {
+    const history = JSON.parse(localStorage.getItem('answerHistory') || '[]');
+
+    const entry = {
+        id: Date.now(),
+        date: new Date().toISOString(),
+        prompt: currentState.currentPrompt || '',
+        userAnswer: userAnswer || '',
+        result: result,
+        inMistakeNote: shouldAddToMistakes(result)
+    };
+
+    history.unshift(entry);
+    localStorage.setItem('answerHistory', JSON.stringify(history));
+}
+
+function goToNextQuestion() {
+
+    const resultDisplay = document.getElementById('resultDisplay');
+    if (resultDisplay) {
+        resultDisplay.innerHTML = '';
+    }
+
+    const answerInput =
+        document.getElementById('answerInput') ||
+        document.getElementById('userAnswer');
+
+    if (answerInput) {
+        answerInput.value = '';
+    }
+
+    // 次の問題生成
+    generatePrompt(); 
+}
+
+function checkThreshold(score, threshold) {
+    if (threshold.type === 'numeric') {
+        const numScore = parseFloat(score);
+        return !isNaN(numScore) && numScore >= threshold.value;
+    }
+    if (threshold.type === 'letter') {
+        return score === 'A' || score === 'B';
+    }
+    return false;
+}
+
+function updateCharPanelToggleText() {
+    const btn = document.getElementById('toggleCharPanelBtn');
+    if (!btn) return;
+
+    if (currentState.uiLang === 'JA') {
+        btn.textContent = document.getElementById('charPanel').classList.contains('collapsed')
+            ? '文字パネルを表示'
+            : '文字パネルを隠す';
+    } else {
+        btn.textContent = document.getElementById('charPanel').classList.contains('collapsed')
+            ? 'Show Character Panel'
+            : 'Hide Character Panel';
+    }
+}
+    </script>
+</body>
+</html>

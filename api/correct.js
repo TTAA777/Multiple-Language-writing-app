@@ -279,6 +279,15 @@ Reward correctness, explain weaknesses precisely, and always help the learner mo
         let result = null;
         
         while (attempts < 2) {
+            console.log('CORRECT PAYLOAD', {
+                targetLang: currentState.targetLang,
+                exam: currentState.exam,
+                level: currentState.level,
+                focus: currentState.focus,
+                uiLang: currentState.uiLang,
+                feedbackLang: currentState.feedbackLang
+            });
+
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: {
