@@ -301,7 +301,7 @@ Reward correctness, explain weaknesses precisely, and always help the learner mo
         while (attempts < 2) {
             console.log('CORRECT PAYLOAD', {
                 targetLang: targetLanguage,
-                exam: exam,
+                exam: examType,
                 level: level,
                 focus: focus,
                 feedbackLang: feedbackLanguage
