@@ -1645,26 +1645,15 @@ async function correctAnswer() {
         const correctUrl = 'https://multiple-language-writing-app.vercel.app/api/correct';
 
         console.log('CORRECT URL =', correctUrl);
-        
         console.log('CORRECT BODY =', {
             targetLanguage: currentState.targetLang,
             examType: currentState.exam,
             level: currentState.level,
             focus: currentState.focus,
             promptText: currentState.currentPrompt,
-            userAnswer: userAnswer
+            userAnswer: userAnswer,
+            feedbackLanguage: currentState.feedbackLang
         });
-
-        console.log('CORRECT RESPONSE STATUS =', response.status);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('CORRECT RESPONSE TEXT =', errorText);
-            throw new Error('Failed to correct answer');
-        }
-
-        const data = await response.json();
-        console.log('CORRECT RESPONSE JSON =', data);
 
         const response = await fetch(correctUrl, {
             method: 'POST',
@@ -1674,24 +1663,29 @@ async function correctAnswer() {
                 examType: currentState.exam,
                 level: currentState.level,
                 focus: currentState.focus,
-                promptText: currentState.currentprompt,
+                promptText: currentState.currentPrompt,
                 userAnswer: userAnswer,
                 feedbackLanguage: currentState.feedbackLang
             })
         });
-        
+
+        console.log('CORRECT RESPONSE STATUS =', response.status);
+
         if (!response.ok) {
             let message = 'Unknown error';
             try {
-                  const err = await response.json();
-                  message = err.error || message;
-             } catch {
-                    message = await response.text();
-             }
-             throw new Error(message);
+                const err = await response.json();
+                message = err.error || message;
+            } catch {
+                message = await response.text();
+            }
+            console.error('CORRECT RESPONSE TEXT =', message);
+            throw new Error(message);
         }
-        
+
         const result = await response.json();
+        console.log('CORRECT RESPONSE JSON =', result);
+
         displayResult(result, userAnswer);
         
         if (result.shouldAddToMistakes) {
