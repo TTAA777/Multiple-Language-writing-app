@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { targetLanguage, examType, level, focus, uiLang } = req.body;
+        const { targetLanguage, examType, level, focus, uiLang, feedbackLang } = req.body;
 
         if (!targetLanguage || !examType || !level || !focus) {
             return res.status(400).json({ error: 'Missing required fields' });

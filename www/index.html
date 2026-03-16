@@ -1479,8 +1479,9 @@ async function startNewPractice() {
                 examType: currentState.exam,
                 level: currentState.level,
                 focus: currentState.focus,
-                uiLang: currentState.uiLang
-            })
+                uiLang: currentState.uiLang,
+                feedbackLang: currentState.feedbackLang
+                })
         });
 
         console.log('ASK RESPONSE STATUS =', response.status);
