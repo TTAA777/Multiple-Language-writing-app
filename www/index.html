@@ -1642,7 +1642,20 @@ async function correctAnswer() {
     btn.innerHTML = '<span class="spinner"></span> Correcting...';
     
     try {
-        const response = await fetch('/api/correct', {
+        const correctUrl = 'https://multiple-language-writing-app.vercel.app/api/correct';
+
+        console.log('CORRECT URL =', correctUrl);
+        
+        console.log('CORRECT BODY =', {
+            targetLanguage: currentState.targetLang,
+            examType: currentState.exam,
+            level: currentState.level,
+            focus: currentState.focus,
+            promptText: currentState.currentPrompt,
+            userAnswer: userAnswer
+        });
+
+        const response = await fetch(correctUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1676,6 +1689,9 @@ async function correctAnswer() {
         
     } catch (error) {
         alert('Error correcting answer: ' + error.message);
+        console.error('CORRECT ERROR FULL =', error);
+        console.error('CORRECT ERROR MESSAGE =', error?.message);
+        console.error('CORRECT ERROR STACK =', error?.stack);
     } finally {
         btn.disabled = false;
         btn.textContent = TRANSLATIONS[currentState.uiLang].btnCorrect;
