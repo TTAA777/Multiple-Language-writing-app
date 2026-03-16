@@ -1501,6 +1501,8 @@ async function startNewPractice() {
         document.getElementById('answerTextarea').value = '';
         document.getElementById('resultDisplay').style.display = 'none';
 
+        navigateTo('practice');
+
     } catch (error) {
         console.error('ASK ERROR FULL =', error);
         console.error('ASK ERROR MESSAGE =', error?.message);
