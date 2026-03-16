@@ -1655,6 +1655,17 @@ async function correctAnswer() {
             userAnswer: userAnswer
         });
 
+        console.log('CORRECT RESPONSE STATUS =', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('CORRECT RESPONSE TEXT =', errorText);
+            throw new Error('Failed to correct answer');
+        }
+
+        const data = await response.json();
+        console.log('CORRECT RESPONSE JSON =', data);
+
         const response = await fetch(correctUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
