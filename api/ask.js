@@ -89,7 +89,7 @@ Return only the sentence.`;
 
         console.log('about to call OpenAI');
 
-        cconsole.log('ASK PAYLOAD', {
+        console.log('ASK PAYLOAD', {
             targetLanguage,
             examType,
             level,
