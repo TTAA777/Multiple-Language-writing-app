@@ -53,9 +53,9 @@ export default async function handler(req, res) {
 
 Generate ONE ${uiLangMap[uiLang]} sentence that could realistically appear in an essay written by a student preparing for the following exam:
 
-Exam: {examType}
-Level / Band: {level}
-Focus: {focus}
+Exam: ${examType}
+Level / Band: ${level}
+Focus: ${focus}
 
 Requirements:
 
@@ -98,7 +98,7 @@ Return only the sentence.`;
             feedbackLang
         });
 
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        const response = await fetch(`${API_BASE}/api/ask`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
