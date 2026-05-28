@@ -307,7 +307,7 @@ Reward correctness, explain weaknesses precisely, and always help the learner mo
                 feedbackLang: feedbackLanguage
             });
 
-            const response = await fetch(`${API_BASE}/api/correct`, {
+            const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
