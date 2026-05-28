@@ -98,7 +98,7 @@ Return only the sentence.`;
             feedbackLang
         });
 
-        const response = await fetch(`${API_BASE}/api/ask`, {
+        const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
