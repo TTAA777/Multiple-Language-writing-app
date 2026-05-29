@@ -1,6 +1,6 @@
 {
-  "name": "AI Writing Coach",
-  "short_name": "WritingCoach",
+  "name": "AI WritingVocab",
+  "short_name": "WritingVocab",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

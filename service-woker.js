@@ -1,4 +1,4 @@
-const CACHE_NAME = 'writing-coach-v1';
+const CACHE_NAME = 'writingvocab-v1';
 const urlsToCache = [
   '/',
   '/index.html',
